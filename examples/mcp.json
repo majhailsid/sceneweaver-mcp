@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "sceneweaver": {
+      "command": "/absolute/path/to/.venv/bin/sceneweaver-mcp",
+      "args": ["serve"]
+    }
+  }
+}
+
