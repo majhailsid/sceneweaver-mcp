@@ -3,4 +3,4 @@ graft docs
 graft examples
 graft scripts
 graft .github/workflows
-global-exclude __pycache__ *.py[cod] .DS_Store
+global-exclude *.py[cod] .DS_Store

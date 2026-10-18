@@ -16,6 +16,18 @@ No key for an LLM provider is required: your connected assistant supplies the te
 An MCP client may still retain prompts and tool results under its own policies.
 Job state, cached media and output files persist on your computer until removed.
 
+Client discovery is local and read-only. Registration is a separate CLI action,
+offered by the installer only after the operator selects a client. It is never
+performed by package installation, server startup, or an MCP tool call. It adds
+only the SceneWeaver entry, preserves other settings, and backs up existing files.
+Windows replacement preserves file access controls; POSIX backups are private.
+Linked paths, malformed settings, duplicate JSON keys, conflicting entries, and
+oversized files are refused. Close the selected client before making changes;
+an editor can otherwise race any local configuration writer. Backups may contain
+credentials from the original client configuration: keep them private, never
+commit them, and remove them when no longer needed. Restart and trust decisions
+remain under the client's control.
+
 Before sharing diagnostics, remove scripts, file paths, personal media and keys.
 Do not include secrets in public GitHub issues. For sensitive vulnerabilities,
 use GitHub's private vulnerability reporting if enabled; otherwise open a minimal
