@@ -27,7 +27,7 @@ as shown below. These scripts download packages; they do not download voice mode
 # Windows PowerShell, from the extracted bundle directory
 py -3.12 -m venv .venv
 .\.venv\Scripts\python -m pip install --upgrade pip
-.\.venv\Scripts\python -m pip install "./sceneweaver_mcp-0.1.0-py3-none-any.whl[voice]"
+.\.venv\Scripts\python -m pip install "./sceneweaver_mcp-0.1.1-py3-none-any.whl[voice]"
 .\.venv\Scripts\sceneweaver-mcp setup-voice
 .\.venv\Scripts\sceneweaver-mcp doctor
 ```
@@ -36,7 +36,7 @@ py -3.12 -m venv .venv
 # macOS / Linux, from the extracted bundle directory
 python3 -m venv .venv
 .venv/bin/python -m pip install --upgrade pip
-.venv/bin/python -m pip install './sceneweaver_mcp-0.1.0-py3-none-any.whl[voice]'
+.venv/bin/python -m pip install './sceneweaver_mcp-0.1.1-py3-none-any.whl[voice]'
 .venv/bin/sceneweaver-mcp setup-voice
 .venv/bin/sceneweaver-mcp doctor
 ```

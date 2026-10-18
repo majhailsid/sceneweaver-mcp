@@ -6,8 +6,8 @@ if [ ! -x .venv/bin/python ]; then
   python3 -m venv .venv
 fi
 .venv/bin/python -m pip install --upgrade pip
-if [ -f sceneweaver_mcp-0.1.0-py3-none-any.whl ]; then
-  .venv/bin/python -m pip install './sceneweaver_mcp-0.1.0-py3-none-any.whl[voice]'
+if [ -f sceneweaver_mcp-0.1.1-py3-none-any.whl ]; then
+  .venv/bin/python -m pip install './sceneweaver_mcp-0.1.1-py3-none-any.whl[voice]'
 else
   .venv/bin/python -m pip install '.[voice]'
 fi

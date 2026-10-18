@@ -68,7 +68,7 @@ class RenderTests(unittest.TestCase):
 
     def test_exact_duration_captioned_music_export(self):
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
+            root = Path(directory).resolve()
             source = root / 'image.png'
             Image.new('RGB', (1200, 1200), '#356b77').save(source)
             plan = {'id': 'test', 'duration_seconds': 2, 'aspect': '1:1', 'voice': 'af_heart',
