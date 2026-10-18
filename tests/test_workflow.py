@@ -1,17 +1,20 @@
 import asyncio
+import io
 import os
 from pathlib import Path
 import sys
+import subprocess
 import tempfile
 import time
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
+from uuid import uuid4
 
 from PIL import Image
 from sceneweaver_mcp import media,storyboard
 from sceneweaver_mcp.jobs import JobManager
 from sceneweaver_mcp import jobs
-from sceneweaver_mcp.paths import contained,home
+from sceneweaver_mcp.paths import contained,home,write_json
 
 
 class WorkflowTests(unittest.TestCase):
@@ -54,6 +57,16 @@ class WorkflowTests(unittest.TestCase):
             with self.assertRaises(ValueError):manager.start(storyboard.create([{'text':'Short.'}],15))
         finally:manager.close()
 
+    def test_video_preview_runs_without_a_console_window(self):
+        plan=storyboard.create([{'text':'A moving scene.','asset_id':'a'*64}],3)
+        png=io.BytesIO()
+        Image.new('RGB',(480,240)).save(png,format='PNG')
+        with patch.object(media,'prepare',return_value={'kind':'video','path':'managed.mp4'}), \
+                patch.object(storyboard.subprocess,'run',return_value=Mock(stdout=png.getvalue())) as run:
+            result=storyboard.preview(plan['id'])
+        self.assertTrue(Path(result['preview_path']).is_file())
+        self.assertEqual(run.call_args.kwargs['creationflags'],getattr(subprocess,'CREATE_NO_WINDOW',0))
+
     def test_worker_failure_is_visible_without_voice_models(self):
         asset=self.image()
         plan=storyboard.create([{'text':'A short narration.','asset_id':asset['id']}],3,aspect='1:1')
@@ -95,6 +108,49 @@ class WorkflowTests(unittest.TestCase):
             self.assertIsNone(manager._active)
             self.assertEqual(manager.status(job['job_id'])['stage'],'time_limit')
         finally:manager.close()
+
+    def test_cancel_preserves_completed_result(self):
+        manager=JobManager()
+        job_id=str(uuid4())
+        write_json(manager.folder(job_id)/'status.json',{'job_id':job_id,'status':'completed','progress':100})
+        manager._active=(job_id,Mock(),None)
+        try:
+            with patch.object(manager,'_terminate') as terminate:
+                self.assertEqual(manager.cancel(job_id)['status'],'completed')
+                terminate.assert_not_called()
+        finally:
+            manager._active=None
+            manager.close()
+
+    def test_cancel_waits_for_last_worker_write(self):
+        manager=JobManager()
+        job_id=str(uuid4())
+        status_file=manager.folder(job_id)/'status.json'
+        write_json(status_file,{'job_id':job_id,'status':'running'})
+        process=Mock()
+        process.wait.side_effect=lambda **kwargs:write_json(status_file,{'job_id':job_id,'status':'completed'})
+        manager._active=(job_id,process,None)
+        try:
+            with patch.object(manager,'_terminate'):
+                self.assertEqual(manager.cancel(job_id)['status'],'cancelled')
+            process.wait.assert_called_once()
+            self.assertEqual(manager.status(job_id)['status'],'cancelled')
+        finally:
+            manager._active=None
+            manager.close()
+
+    def test_close_waits_for_watchdog_before_unlocking_storage(self):
+        manager=JobManager()
+        watcher=Mock()
+        watcher.is_alive.return_value=False
+        def check_lock(**kwargs):
+            with self.assertRaises(RuntimeError):JobManager()
+        watcher.join.side_effect=check_lock
+        manager._watcher=watcher
+        manager.close()
+        watcher.join.assert_called_once()
+        replacement=JobManager()
+        replacement.close()
 
     def test_real_stdio_storyboard_preview_and_errors(self):
         async def run():

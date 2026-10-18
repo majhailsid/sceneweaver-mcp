@@ -255,7 +255,7 @@ def _inspect(path: Path, kind: str):
     import numpy as np
     reader = imageio_ffmpeg.read_frames(str(path), pix_fmt='rgb24',
                                        input_params=['-protocol_whitelist', 'file,pipe', '-threads', '2'],
-                                       output_params=['-vf', 'scale=64:64,fps=1', '-t', '4'])
+                                       output_params=['-vf', 'scale=64:64,fps=4', '-t', '4'])
     try:
         info = next(reader)
         width, height = info['source_size']

@@ -152,6 +152,20 @@ class MediaTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'frozen'):
                     media._inspect(path, 'video')
 
+    def test_one_second_moving_video_is_accepted(self):
+        import imageio_ffmpeg
+        import numpy as np
+        path = self.root / 'short-moving.mp4'
+        writer = imageio_ffmpeg.write_frames(str(path), (1280, 720), fps=4,
+                                             output_params=['-threads', '2'])
+        writer.send(None)
+        try:
+            for frame in range(4):
+                writer.send(np.full((720, 1280, 3), frame * 50, dtype=np.uint8))
+        finally:
+            writer.close()
+        self.assertGreater(media._inspect(path, 'video')['motion_score'], 1)
+
 
 if __name__ == '__main__':
     unittest.main()

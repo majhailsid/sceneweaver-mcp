@@ -119,7 +119,8 @@ def preview(plan_id,allow_network=False):
                 result=subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(),'-nostdin','-loglevel','error',
                     '-protocol_whitelist','file,pipe','-threads','2','-i',str(item['path']),
                     '-frames:v','1','-vf',f'scale={card_w}:240:force_original_aspect_ratio=decrease,pad={card_w}:240:(ow-iw)/2:(oh-ih)/2',
-                    '-f','image2pipe','-vcodec','png','-'],capture_output=True,timeout=25,check=True)
+                    '-f','image2pipe','-vcodec','png','-'],capture_output=True,timeout=25,check=True,
+                    creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
                 import io
                 thumbnail=Image.open(io.BytesIO(result.stdout)).convert('RGB')
             sheet.paste(thumbnail,(x,y))
