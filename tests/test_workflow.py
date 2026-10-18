@@ -160,6 +160,7 @@ class WorkflowTests(unittest.TestCase):
             self.image()
             async with Client(parameters) as client:
                 names={t.name for t in (await client.list_tools()).tools}
+                self.assertNotIn('connect',names);self.assertNotIn('clients',names)
                 self.assertIn('preview_voice',names);self.assertIn('select_scene_asset',names)
                 info=(await client.call_tool('get_capabilities',{})).structured_content
                 self.assertEqual(info['name'],'SceneWeaver MCP')

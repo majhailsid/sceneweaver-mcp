@@ -22,12 +22,14 @@ The bundle also contains `examples/install-windows.cmd` and
 `examples/install-posix.sh`. Run the matching installer from a terminal to create
 a local environment and install the voice extra. Then run `setup-voice` explicitly
 as shown below. These scripts download packages; they do not download voice models.
+At the end, they detect supported client configuration folders and offer to connect
+one client. Press Enter to skip. Plain `pip install` never edits client settings.
 
 ```powershell
 # Windows PowerShell, from the extracted bundle directory
 py -3.12 -m venv .venv
 .\.venv\Scripts\python -m pip install --upgrade pip
-.\.venv\Scripts\python -m pip install "./sceneweaver_mcp-0.1.1-py3-none-any.whl[voice]"
+.\.venv\Scripts\python -m pip install "./sceneweaver_mcp-0.1.2-py3-none-any.whl[voice]"
 .\.venv\Scripts\sceneweaver-mcp setup-voice
 .\.venv\Scripts\sceneweaver-mcp doctor
 ```
@@ -36,7 +38,7 @@ py -3.12 -m venv .venv
 # macOS / Linux, from the extracted bundle directory
 python3 -m venv .venv
 .venv/bin/python -m pip install --upgrade pip
-.venv/bin/python -m pip install './sceneweaver_mcp-0.1.1-py3-none-any.whl[voice]'
+.venv/bin/python -m pip install './sceneweaver_mcp-0.1.2-py3-none-any.whl[voice]'
 .venv/bin/sceneweaver-mcp setup-voice
 .venv/bin/sceneweaver-mcp doctor
 ```
@@ -53,6 +55,21 @@ and codec licensing are separate from this project's Apache license. See
 [third-party notices](THIRD_PARTY_NOTICES.md) before redistributing an environment.
 
 ## Connect an MCP client
+
+Run `sceneweaver-mcp connect` for automatic detection and an opt-in setup prompt.
+It supports Codex shared configuration, Cursor, and Claude Desktop on Windows/macOS.
+It checks known configuration folders rather than scanning your computer. Choose
+one client; an existing configuration is backed up before SceneWeaver is added.
+
+For a read-only check, run `sceneweaver-mcp clients`. To preview a specific change,
+run `sceneweaver-mcp connect --client cursor --dry-run`. To explicitly apply it,
+omit `--dry-run`. Client IDs are `codex`, `cursor`, and `claude-desktop`.
+
+Restart the selected client and approve SceneWeaver there. Detection does not prove
+that a client is installed or enabled, and does not bypass its permissions. Only
+one server may own the default storage at a time; close other clients using it or
+configure separate `SCENEWEAVER_HOME` directories. See [client setup](docs/clients.md)
+for supported paths, backups, and manual setup limitations.
 
 Use the absolute executable path from the environment you just installed. The
 server uses stdio and needs no localhost port. A generic client configuration is

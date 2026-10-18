@@ -58,7 +58,7 @@ by appearing in this table:
 
 | Option | Why consider it | Requirement or limitation |
 | --- | --- | --- |
-| [Kokoro-FastAPI](https://github.com/remsky/Kokoro-FastAPI) | Local OpenAI-compatible speech service, voice mixing and timestamps | Separate service and model setup. Apache-2.0 wrapper with component notices. Not a drop-in promise that every endpoint is exposed by SceneWeaver. |
+| [Kokoro-FastAPI](https://github.com/remsky/Kokoro-FastAPI) | Local HTTP speech service, voice mixing and timestamps | Separate service and model setup. Apache-2.0 wrapper with component notices. Not a drop-in promise that every endpoint is exposed by SceneWeaver. |
 | [Piper](https://github.com/OHF-Voice/piper1-gpl) | Small local speech models | Current engine is GPL-3.0; voice model licenses vary. Needs a deliberate integration and distribution review. |
 | [Pexels official API](https://www.pexels.com/api/documentation/) | Stable supported stock video API | Requires a provider API key. Better for regular production use if keys become acceptable. |
 | [Pixabay API](https://pixabay.com/api/docs/) | Additional stock image/video discovery | Requires an API key and compliance with its caching, display and Content License rules. |

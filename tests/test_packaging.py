@@ -56,14 +56,16 @@ class PackagingTests(unittest.TestCase):
         with zipfile.ZipFile(wheels[-1]) as archive:
             names = archive.namelist()
             self.assertIn('sceneweaver_mcp/__main__.py', names)
+            self.assertIn('sceneweaver_mcp/clients.py', names)
             self.assertTrue(any(name.endswith('/licenses/LICENSE') for name in names))
             for name in names:
                 self.assertFalse(any(part in name.split('/') for part in
-                                     ('.venv', 'node_modules', 'models', 'cache', 'jobs', 'runtime', '.env')))
+                                     ('.venv', 'node_modules', 'models', 'cache', 'jobs', 'runtime', '.env', '__pycache__')))
+                self.assertFalse(name.endswith(('.pyc','.pyo')))
             resources = ROOT / 'src/sceneweaver_mcp/resources'
             for folder in (resources, ROOT / 'src/sceneweaver_mcp/integrations'):
                 for source in folder.rglob('*'):
-                    if source.is_file() and not source.is_symlink():
+                    if source.is_file() and not source.is_symlink() and '__pycache__' not in source.parts:
                         self.assertIn(source.relative_to(ROOT / 'src').as_posix(), names)
 
     def test_built_source_contains_install_and_build_material(self):
@@ -72,7 +74,7 @@ class PackagingTests(unittest.TestCase):
             self.skipTest('Run scripts/package_release.py to inspect built artifacts')
         with tarfile.open(sources[-1], 'r:gz') as archive:
             names = {name.split('/', 1)[1] for name in archive.getnames() if '/' in name}
-        for required in ('MANIFEST.in', 'SECURITY.md', 'docs/integrations.md',
+        for required in ('MANIFEST.in', 'SECURITY.md', 'docs/integrations.md', 'docs/clients.md',
                          'examples/install-windows.cmd', 'examples/install-posix.sh',
                          'examples/run-windows.cmd', 'examples/run-posix.sh',
                          'scripts/package_release.py', '.github/workflows/check.yml'):
