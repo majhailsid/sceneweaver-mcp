@@ -1,6 +1,7 @@
 import tempfile
 import unittest
 import os
+import subprocess
 from pathlib import Path
 from unittest.mock import patch
 
@@ -35,6 +36,7 @@ class RenderTests(unittest.TestCase):
             run.return_value.returncode = 0
             render._run(['-i', 'one.mp4', '-loop', '1', '-i', 'two.png', 'out.mp4'])
             arguments = run.call_args.args[0]
+            self.assertEqual(run.call_args.kwargs['creationflags'],getattr(subprocess,'CREATE_NO_WINDOW',0))
             for index, argument in enumerate(arguments):
                 if argument == '-i':
                     self.assertEqual(arguments[index - 2:index], ['-protocol_whitelist', 'file,pipe'])

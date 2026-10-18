@@ -18,7 +18,8 @@ def _run(arguments: list[str], timeout: int = 240) -> None:
         safe_arguments.append(argument)
     result = subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), '-nostdin', '-hide_banner',
                              '-loglevel', 'error', '-y', *safe_arguments],
-                            capture_output=True, timeout=timeout)
+                            capture_output=True, timeout=timeout,
+                            creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
     if result.returncode:
         # Keep local paths, source URLs and provider messages out of tool responses.
         raise ValueError('Media export failed; check the selected asset format and available disk space')

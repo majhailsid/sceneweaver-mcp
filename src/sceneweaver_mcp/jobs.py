@@ -58,6 +58,7 @@ class JobManager:
         self.directory.mkdir(exist_ok=True)
         self._lock=threading.RLock()
         self._active=None
+        self._watcher=None
         self._file=contained(self.root,self.root/'server.lock').open('a+b')
         self._file.seek(0)
         if os.fstat(self._file.fileno()).st_size==0:self._file.write(b'0');self._file.flush()
@@ -111,7 +112,9 @@ class JobManager:
                 if os.name=='nt':resource=WindowsJob(process)
                 self._active=(job_id,process,resource)
                 process.stdin.write(b'start\n');process.stdin.close()
-                threading.Thread(target=self._watch,args=(job_id,process,resource),daemon=True).start()
+                watcher=threading.Thread(target=self._watch,args=(job_id,process,resource),daemon=True)
+                watcher.start()
+                self._watcher=watcher
             except Exception:
                 if process is not None:process.kill();process.wait(timeout=10)
                 if resource:resource.close()
@@ -178,9 +181,11 @@ class JobManager:
     def cancel(self,job_id):
         with self._lock:
             state=self.status(job_id)
+            if state['status'] in ('completed','failed','cancelled'):return state
             if self._active and self._active[0]==job_id:
-                write_json(self.folder(job_id)/'status.json',{'job_id':job_id,'status':'cancelled','stage':'cancelled','progress':0})
                 self._terminate(self._active[1],self._active[2])
+                self._active[1].wait(timeout=10)
+                write_json(self.folder(job_id)/'status.json',{'job_id':job_id,'status':'cancelled','stage':'cancelled','progress':0})
                 return self.status(job_id)
             return state
 
@@ -189,6 +194,12 @@ class JobManager:
             if self._closed:return
             self._closed=True
             if self._active:self.cancel(self._active[0])
+            watcher=self._watcher
+        # The watchdog needs this lock to finish its final status and resource cleanup.
+        if watcher:
+            watcher.join(timeout=15)
+            if watcher.is_alive():raise RuntimeError('Render cleanup is still running; storage remains locked')
+        with self._lock:
             if os.name=='nt':
                 import msvcrt
                 self._file.seek(0);msvcrt.locking(self._file.fileno(),msvcrt.LK_UNLCK,1)
